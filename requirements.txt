@@ -1,9 +1,23 @@
-pycryptodome
-z3-solver
-sympy
-scapy
-Pillow
-ExifRead
-requests
-base58
-pypdf
+sudo pacman -S --needed \
+    python \
+    python-pycryptodome \
+    python-z3-solver \
+    python-sympy \
+    python-scapy \
+    python-pillow \
+    python-exifread \
+    binwalk \
+    steghide \
+    exiftool \
+    tshark \
+    foremost \
+    pngcheck \
+    zsteg \
+    hashcat \
+    john \
+    sagemath \
+    gdb \
+    pwndbg
+    requests\
+    base58\
+    pypdf\
