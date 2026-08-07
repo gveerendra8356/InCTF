@@ -1,0 +1,199 @@
+================================================================================
+                    InCTF FORENSICS COMMAND CHEAT SHEET
+================================================================================
+
+--------------------------------------------------------------------------------
+1. BINWALK (Firmware, Archives & File Carving)
+--------------------------------------------------------------------------------
+# Scan a binary file for embedded signatures/offsets:
+binwalk challenge.bin
+
+# Extract ALL embedded files automatically:
+binwalk -e challenge.bin
+
+# Extract recursively (scans extracted files for deeper embedded files):
+binwalk -M -e challenge.bin
+
+# Generate an entropy graph (useful to detect encrypted/compressed regions):
+binwalk -E challenge.bin
+
+
+--------------------------------------------------------------------------------
+2. ZSTEG (PNG & BMP LSB Steganography)
+--------------------------------------------------------------------------------
+# Run quick automated scan across all channels and bit planes:
+zsteg -a image.png
+
+# Extract specific bit plane (e.g., Red channel 1st bit):
+zsteg -E "r1,lsb,lsbXY" image.png > extracted_payload.bin
+
+# Extract payload using all channels LSB in row-order:
+zsteg -E "b1,msb,lsb" image.png > output.txt
+
+
+--------------------------------------------------------------------------------
+3. JSTEG (JPEG LSB Steganography)
+--------------------------------------------------------------------------------
+# Reveal hidden data inside a JPEG image:
+jsteg reveal image.jpg output.txt
+
+# Hide data in a JPEG image:
+jsteg hide cover.jpg secret.txt output.jpg
+
+
+--------------------------------------------------------------------------------
+4. STEGSNOW (Text Whitespace Steganography)
+--------------------------------------------------------------------------------
+# View invisible trailing characters in terminal:
+cat -A file.txt
+
+# Extract hidden message (without password):
+stegsnow -C file.txt
+
+# Extract hidden message with password:
+stegsnow -C -p "password123" file.txt
+
+
+--------------------------------------------------------------------------------
+5. STEGHIDE (JPEG, BMP, WAV, AU Steganography)
+--------------------------------------------------------------------------------
+# Inspect image metadata for hidden embedded payload:
+steghide info image.jpg
+
+# Extract payload with empty passphrase (hit Enter when prompted):
+steghide extract -sf image.jpg -p ""
+
+# Extract payload using a known passphrase:
+steghide extract -sf image.jpg -p "password"
+
+
+--------------------------------------------------------------------------------
+6. EXIFTOOL (File Metadata & Tag Inspection)
+--------------------------------------------------------------------------------
+# View all metadata properties of any file:
+exiftool file.jpg
+
+# Filter specifically for comment, artist, software, or flag tags:
+exiftool file.jpg | grep -iE "comment|artist|user|software|description|flag"
+
+
+--------------------------------------------------------------------------------
+7. STEGSOLVE (Java GUI Bit-Plane Viewer)
+--------------------------------------------------------------------------------
+# Run Stegsolve GUI:
+java -jar stegsolve.jar
+
+# Key Workflows:
+# - File -> Open -> Select target PNG/BMP
+# - Use Arrow Keys to cycle through Red/Green/Blue Planes 0-7 & Inverted Colors
+# - Analyse -> Data Extract (Manually pull LSB streams)
+# - Analyse -> Frame Browser (Inspect individual GIF frames)
+
+
+--------------------------------------------------------------------------------
+8. TERMINAL ONE-LINERS & STRING TRICKS
+--------------------------------------------------------------------------------
+# 1. Base64 Decode:
+echo "SW5DVEZ7ZmxhZ19oZXJlfQ==" | base64 -d
+
+# 2. Hex to ASCII Conversion:
+echo "496e4354467b666c61677d" | xxd -r -p
+
+# 3. ROT13 / Caesar Cipher Decoding:
+echo "VnPGS{synt_urert}" | tr 'A-Za-z' 'N-ZA-Mn-za-m'
+
+# 4. Search strings for Flag formats (Min string length: 8):
+strings -n 8 challenge.raw | grep -iE "inctf|flag|\{"
+
+# 5. Reverse a string (for inverted flags):
+echo "}g2ls_2s41c_sI_sI3hT{FTCnI" | rev
+
+# 6. View Hex dump of a file header (first 32 bytes):
+head -c 32 file.png | xxd
+
+
+--------------------------------------------------------------------------------
+9. PDF FORENSICS (pdf-parser & pdfid)
+--------------------------------------------------------------------------------
+# Quick overview of suspicious PDF objects (JS, Embedded Files):
+pdfid challenge.pdf
+
+# Search PDF for specific keywords/objects:
+pdf-parser -s flag challenge.pdf
+
+# Extract and decompress a raw stream from object 5:
+pdf-parser -o 5 -d extracted_stream.bin challenge.pdf
+
+
+--------------------------------------------------------------------------------
+10. NETWORK & PCAP FORENSICS (tshark, tcpdump, zeek, chaosreader, ngrep)
+--------------------------------------------------------------------------------
+
+--- A. TSHARK (CLI Wireshark) ---
+# Print all packet summaries in a capture file:
+tshark -r capture.pcap
+
+# Filter by display filter (e.g., HTTP POST requests):
+tshark -r capture.pcap -Y "http.request.method == POST"
+
+# Extract raw HTTP request payloads, user agents, and DNS queries:
+tshark -r capture.pcap -Y "http or dns" -T fields -e http.user_agent -e http.file_data -e dns.qry.name
+
+# Automatically export transferred files over HTTP, SMB, or IMF:
+tshark -r capture.pcap --export-objects "http,extracted_files/"
+
+# Extract FTP user credentials/passwords:
+tshark -r capture.pcap -Y "ftp.request.command == USER or ftp.request.command == PASS" -T fields -e ftp.request.arg
+
+# Extract ICMP payload data (frequently used for ICMP Tunneling stego):
+tshark -r capture.pcap -Y "icmp" -T fields -e data.data | xxd -r -p
+
+
+--- B. TCPDUMP (Fast Packet Parsing) ---
+# Read PCAP file and output in ASCII mode (great for searching plain strings):
+tcpdump -A -r capture.pcap
+
+# Read PCAP in Hex + ASCII mode:
+tcpdump -X -r capture.pcap
+
+# Filter traffic between specific host and port:
+tcpdump -r capture.pcap 'host 192.168.1.10 and port 80'
+
+
+--- C. NGREP (Network Grep for PCAP) ---
+# Search for string "InCTF" or "flag" anywhere in the packet payloads:
+ngrep -I capture.pcap -i "inctf"
+ngrep -I capture.pcap -i "flag"
+
+
+--- D. CHAOSREADER (Session Carving & Replay) ---
+# Extract ALL HTTP files, images, emails, FTP transfers, and HTML session logs:
+chaosreader capture.pcap
+
+# Open created index.html in browser to review carved files and text sessions:
+firefox index.html
+
+
+--- E. ZEEK / BRO (Automated Log Generation) ---
+# Process PCAP and generate clean structured logs (conn.log, http.log, files.log):
+zeek -r capture.pcap
+
+# Search extracted Zeek logs for flags:
+grep -iE "inctf|flag" *.log
+
+# Extract HTTP URIs and Hosts using zeek-cut:
+cat http.log | zeek-cut host uri
+
+
+--- F. TCPTRACE (TCP Stream Analysis) ---
+# Generate summary statistics for all TCP connections in PCAP:
+tcptrace -a capture.pcap
+
+# Reassemble and extract all raw TCP streams:
+tcptrace -e capture.pcap
+
+
+--- G. NETWORKMINER (Mono / Linux NFAT) ---
+# Open PCAP file in NetworkMiner GUI (parses images, OS details, credentials, files):
+mono NetworkMiner.exe capture.pcap
+================================================================================
