@@ -1,0 +1,9 @@
+pycryptodome
+z3-solver
+sympy
+scapy
+Pillow
+ExifRead
+requests
+base58
+pypdf
