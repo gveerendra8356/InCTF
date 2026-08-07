@@ -1,0 +1,285 @@
+================================================================================
+         MASTER CTF CRYPTOGRAPHY & FORENSICS MANUAL (OFFLINE REFERENCE)
+================================================================================
+
+--------------------------------------------------------------------------------
+PART 1: CRYPTOGRAPHY & ENCODING
+--------------------------------------------------------------------------------
+
+### Tool: Awk
+# Fix missing Base64 padding automatically before decoding
+echo -n "aW5jdGY" | awk '{while(length($0)%4!=0) $0=$0"="; print $0}' | base64 -d
+
+### Tool: Base64 / Base32 (Standard Utilities)
+# Base64 decode
+echo 'aW5jdGY=' | base64 -d
+
+# Base32 decode
+echo 'aW5jdGY=' | base32 -d
+
+### Tool: Ciphey
+# Automated recursive cipher/encoding decoder
+ciphey -t "encoded blob"
+
+### Tool: Curl / FactorDB API
+# Query FactorDB API directly from terminal to factorize large RSA Modulus N
+curl -s "http://factordb.com/api?query=<INSERT_N_HERE>"
+
+### Tool: Hashcat
+# Offline MD5 hash cracking using wordlist
+hashcat -m 0 hash.txt /usr/share/wordlists/rockyou.txt
+
+# Crack hash using Best64 rule mutations on wordlist
+hashcat -m 0 hash.txt /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule
+
+# Mask attack (8-character password: 4 lowercase + 4 digits)
+hashcat -m 0 hash.txt -a 3 ?l?l?l?l?d?d?d?d
+
+### Tool: Hashid
+# Identify unknown hash types
+hashid 5f4dcc3b5aa765d61d8327deb882cf99
+
+### Tool: HashPump
+# Perform hash length extension attacks (MD5 / SHA1 / SHA256)
+hashpump -s "orig_hash" -d "orig_data" -a "appended_data" -k 16
+
+### Tool: John the Ripper
+# Crack hashes using wordlist
+john --wordlist=rockyou.txt hash.txt
+
+# Display cracked passwords
+john --show hash.txt
+
+### Tool: OpenSSL
+# Extract RSA Modulus N and Exponent e from public key
+openssl rsa -pubin -in key.pub -text -noout
+
+# Extract RSA parameters and details from X.509 certificate
+openssl x509 -in cert.pem -text -noout
+
+### Tool: PadBuster
+# CBC padding oracle attack execution
+padbuster http://target/dec.php $(cat ct.b64) 16 -encoding 0 -cookies "auth=..."
+
+### Tool: Python Standard Library (Crypto Operations)
+# Hex to ASCII / Bytes conversion
+python3 -c "print(bytes.fromhex('...'))"
+
+# ROT13 decryption
+python3 -c "import codecs; print(codecs.decode('...', 'rot13'))"
+
+# Single-byte XOR brute-force (Keys 0-255)
+for k in $(seq 0 255); do echo -n "$data" | xxd -r -p | python3 -c "import sys;b=sys.stdin.buffer.read(); print(bytes(x^$k for x in b))"; done
+
+# Manual RSA private key computation & decryption
+python3 -c "from Crypto.Util.number import inverse, long_to_bytes; p=...; q=...; e=...; c=...; n=p*q; d=inverse(e, (p-1)*(q-1)); print(long_to_bytes(pow(c,d,n)))"
+
+# Base85 / Ascii85 decode
+python3 -c "import base64; print(base64.b85decode(open('enc.txt').read().strip()).decode())"
+
+# Base32 decode ignoring case and whitespace
+python3 -c "import base64; print(base64.b32decode(open('enc.txt').read().strip().upper()))"
+
+### Tool: RsaCtfTool
+# Automated RSA attack runner using public key file
+python3 RsaCtfTool.py --publickey key.pub --uncipherfile cipher.bin
+
+# Run all automated RSA attack vectors on parameters n, e, c
+python3 RsaCtfTool.py -n <n> -e <e> --uncipher <c> --attack all
+
+### Tool: Tr (Text Processing)
+# Decode URL-safe Base64 (_ and - replaced with / and +)
+echo "aW5jdGY-_" | tr '_-' '/+' | base64 -d
+
+# Clean non-alphanumeric whitespace characters before decoding
+tr -cd 'A-Za-z0-9+/=' < encoded.txt | base64 -d
+
+### Tool: Xortool
+# Guesses multi-byte XOR key length and key
+xortool -c 20 file.bin
+
+### Tool: Xxd
+# Hex string to raw binary conversion
+echo '696e637466' | xxd -r -p
+
+
+--------------------------------------------------------------------------------
+PART 2: FORENSICS & STEGANOGRAPHY
+--------------------------------------------------------------------------------
+
+### Tool: Binwalk
+# Inspect embedded files/signatures
+binwalk suspicious
+
+# Auto-extract carved files recursively
+binwalk -e suspicious
+
+# Force binwalk to scan with raw signature matching and extract everything
+binwalk --dd='.*' suspicious
+
+### Tool: Dd (Data Duplicator)
+# Fix corrupted PNG header magic bytes
+printf '\x89\x50\x4e\x47\x0d\x0a\x1a\x0a' | dd of=fixed.png bs=1 count=8 conv=notrunc
+
+# Extract embedded data manually from a specific offset (e.g., byte 1024)
+dd if=suspicious.bin of=extracted.bin bs=1 skip=1024
+
+### Tool: Exiftool
+# Read image/file EXIF metadata
+exiftool suspicious
+
+### Tool: File
+# Identify true file type via magic bytes
+file suspicious
+
+### Tool: Foremost
+# Carve files by header/footer signatures into output folder
+foremost -i suspicious -o out/
+
+### Tool: ImageMagick (Convert)
+# Extract specific visual color channels (e.g., Red or Alpha plane)
+convert input.png -channel R -separate red_plane.png
+convert input.png -channel Alpha -separate alpha_plane.png
+
+### Tool: ImageMagick / Head / Xxd (Header Inspection)
+# View first 16 raw header bytes to check for corrupted magic numbers
+head -c 16 file.bin | xxd
+
+### Tool: Olevba (Oletools)
+# Extract and deobfuscate malicious MS Office VBA macros
+olevba doc.docm
+
+### Tool: OpenStego
+# Extract hidden payload using OpenStego
+openstego extract -sf input.png -p "passphrase"
+
+### Tool: OutGuess
+# Extract hidden payload from JPEG using OutGuess
+outguess -k "passphrase" -r input.jpg extracted.txt
+
+### Tool: PDF-Parser
+# Inspect structural objects and JavaScript inside PDF
+pdf-parser.py file.pdf
+
+### Tool: Pdfinfo
+# Extract basic info from PDF document
+pdfinfo file.pdf
+
+### Tool: PhotoRec
+# Recover deleted files from images by type
+photorec img
+
+### Tool: Pngcheck
+# Check PNG file structure, integrity, and broken IHDR CRCs
+pngcheck -v -f -a image.png
+
+### Tool: Python PNG IHDR Fixer
+# Rewrite height and width in PNG header bytes manually
+python3 -c "import struct; f=open('flag.png','r+b'); f.seek(16); f.write(struct.pack('>II', 1080, 1920))"
+
+### Tool: Scalpel
+# Use Scalpel for custom pattern carving using configuration rules
+scalpel -c scalpel.conf suspicious -o scalpel_out/
+
+### Tool: Sleuth Kit (Fls)
+# List files and deleted entries at specified partition offset
+fls -r -o <offset> disk.img
+
+### Tool: Sleuth Kit (Icat)
+# Extract file directly by inode number from partition
+icat -o <offset> disk.img <inode> > recovered
+
+### Tool: Sleuth Kit (Mmls)
+# View partition layout on disk image
+mmls disk.img
+
+### Tool: Steghide
+# Extract hidden data with empty passphrase
+steghide extract -sf f.jpg -p ""
+
+### Tool: Stegseek
+# High-speed wordlist cracker for Steghide JPEG files
+stegseek secret.jpg /usr/share/wordlists/rockyou.txt
+
+### Tool: Strings
+# Extract ASCII printable strings (min length 6)
+strings -n 6 suspicious
+
+# Extract 16-bit Little-Endian strings (UTF-16/Windows)
+strings -e l suspicious
+
+### Tool: System Mount Command
+# Mount disk partition read-only in Linux
+sudo mount -o ro,loop,offset=$((512*OFFSET)) disk.img /mnt/x
+
+### Tool: Tcpflow
+# Reassemble raw TCP streams into separate files
+tcpflow -r capture.pcap
+
+### Tool: Tshark
+# Filter HTTP requests and extract Host + URI fields
+tshark -r capture.pcap -Y 'http.request' -T fields -e http.host -e http.request.uri
+
+# Search PCAP frames containing a specific string
+tshark -r capture.pcap -Y 'frame contains "flag"'
+
+# Extract raw USB keyboard capture data
+tshark -r usb.pcap -Y 'usb.capdata' -T fields -e usb.capdata
+
+# Extract transferred HTTP files directly from PCAP
+tshark -r capture.pcap --export-objects "http,extracted_files/"
+
+# Decrypt SSL/TLS PCAP using a key log file
+tshark -r capture.pcap -o "tls.keylog_file:keys.log" -Y 'http'
+
+# Extract raw reassembled TCP stream payloads
+tshark -r capture.pcap -q -z follow,tcp,ascii,0
+
+# Search for flags in DNS queries (Exfiltration channel)
+tshark -r capture.pcap -Y "dns" -T fields -e dns.qry.name
+
+# Search for flags in ICMP payload data
+tshark -r capture.pcap -Y "icmp" -T fields -e data.data | xxd -r -p
+
+### Tool: Volatility 2
+# List processes using explicit profile
+vol.py -f mem.raw --profile=Win7SP1x64 pslist
+
+### Tool: Volatility 3
+# Obtain Windows system info
+vol -f mem.raw windows.info
+
+# List active processes
+vol -f mem.raw windows.pslist
+
+# Retrieve process command-line parameters
+vol -f mem.raw windows.cmdline
+
+# Scan memory for files matching "flag"
+vol -f mem.raw windows.filescan | grep -i flag
+
+# Dump specific file from virtual address offset
+vol -f mem.raw windows.dumpfiles --virtaddr 0x...
+
+# Dump cached SAM password hashes
+vol -f mem.raw windows.hashdump
+
+# Scan for hidden/unlinked processes using pool tags
+vol -f mem.raw windows.psscan
+
+# Scan for hidden network sockets/connections
+vol -f mem.raw windows.netscan
+
+# Perform direct YARA pattern search across raw physical memory
+vol -f mem.raw yarascan.YaraScan --yara-rules "flag{"
+
+### Tool: Xxd
+# Inspect raw magic bytes header
+xxd suspicious | head
+
+### Tool: Zsteg
+# Extract LSB steganography data from PNG/BMP
+zsteg f.png
+
+# Run all extraction methods
+zsteg -a f.png
