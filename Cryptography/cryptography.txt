@@ -1,0 +1,43 @@
+================================================================================
+                    InCTF CRYPTOGRAPHY COMMAND CHEAT SHEET
+================================================================================
+
+--------------------------------------------------------------------------------
+1. PYTHON QUICK MATH & CIPHERS (Miniforge3)
+--------------------------------------------------------------------------------
+# Modular Inverse in Python 3.8+:
+python3 -c "print(pow(e, -1, phi))"
+
+# Bytes to Integer and Integer to Bytes (PyCryptodome):
+python3 -c "from Crypto.Util.number import *; print(long_to_bytes(0x496e435446...))"
+
+# Quick GCD calculation:
+python3 -c "import math; print(math.gcd(n1, n2))"
+
+--------------------------------------------------------------------------------
+2. FACTORDB CLI & ONLINE TOOLS (If local network permits)
+--------------------------------------------------------------------------------
+# Query prime factorization for large N using Python:
+python3 -c "import urllib.request, json; print(json.loads(urllib.request.urlopen('http://factordb.com/api?query=NUMBER').read()))"
+
+--------------------------------------------------------------------------------
+3. OPENSSL COMMANDS (Certificates & Key Inspection)
+--------------------------------------------------------------------------------
+# Extract RSA public key parameters (n, e) from .pem file:
+openssl rsa -pubin -in pubkey.pem -text -noout
+
+# Extract RSA private key parameters (d, p, q) from .pem file:
+openssl rsa -in private.pem -text -noout
+
+# Decrypt raw data using private RSA key:
+openssl pkeyutl -decrypt -inkey private.pem -in ciphertext.bin -out flag.txt
+
+--------------------------------------------------------------------------------
+4. AES / DES DECRYPTION VIA OPENSSL
+--------------------------------------------------------------------------------
+# Decrypt AES-128-CBC with key and IV in hex:
+openssl enc -d -aes-128-cbc -in cipher.bin -out flag.txt -K <HEX_KEY> -iv <HEX_IV>
+
+# Decrypt AES-256-ECB:
+openssl enc -d -aes-256-ecb -in cipher.bin -out flag.txt -K <HEX_KEY>
+================================================================================
