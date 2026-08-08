@@ -31,3 +31,5 @@ Focuses on artifact recovery, network traffic dissection, memory analysis, and h
 * **Disk & OS Artifacts:** Registry hive analysis, event log evaluation, shellbags, and timeline reconstruction.
 
 ---
+https://github.com/Pavithra-1977
+https://GitHub.com/vishnu0523
