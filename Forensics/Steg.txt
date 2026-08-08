@@ -1,0 +1,33 @@
+Linux Commands for PNG Steganography
+
+1. Install useful tools
+sudo apt update
+sudo apt install steghide imagemagick binwalk exiftool
+
+2. Check the PNG
+file image.png
+exiftool image.png
+
+3. Extract color channels
+convert image.png -channel R -separate red.png
+convert image.png -channel G -separate green.png
+convert image.png -channel B -separate blue.png
+
+4. Look for embedded files/data
+binwalk image.png
+binwalk -e image.png
+
+5. Check for readable strings
+strings image.png
+strings -n 6 image.png
+
+6. Check with StegHide
+steghide info image.png
+steghide extract -sf image.png
+
+7. Run StegSolve
+java -jar StegSolve.jar
+
+In StegSolve:
+Analyse -> Data Extract
+Check R/G/B bit planes, especially the 0th bit (LSB).
